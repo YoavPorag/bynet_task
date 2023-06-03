@@ -1,57 +1,28 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: jenkins
-  namespace: devops-tools
+  name: node-app-deployment
+  namespace: node-app
 spec:
-  replicas: 1
+  replicas: 2
   selector:
     matchLabels:
-      app: jenkins-server
+      app: node-app-deployment
   template:
     metadata:
       labels:
-        app: jenkins-server
+        app: node-app-deployment
     spec:
-      securityContext:
-            fsGroup: 1000
-            runAsUser: 1000
-      serviceAccountName: jenkins-admin
       containers:
-        - name: jenkins
-          image: jenkins/jenkins:lts
+        - name: node-app
+          image: yoavporag/node-app:latest
+          ports:
+          - containerPort: 3000
+            protocol: TCP
           resources:
             limits:
-              memory: "2Gi"
-              cpu: "1000m"
+              memory: 512Mi
+              cpu: "1"
             requests:
-              memory: "500Mi"
-              cpu: "500m"
-          ports:
-            - name: httpport
-              containerPort: 8080
-            - name: jnlpport
-              containerPort: 50000
-          livenessProbe:
-            httpGet:
-              path: "/login"
-              port: 8080
-            initialDelaySeconds: 90
-            periodSeconds: 10
-            timeoutSeconds: 5
-            failureThreshold: 5
-          readinessProbe:
-            httpGet:
-              path: "/login"
-              port: 8080
-            initialDelaySeconds: 60
-            periodSeconds: 10
-            timeoutSeconds: 5
-            failureThreshold: 3
-          volumeMounts:
-            - name: jenkins-data
-              mountPath: /var/jenkins_home
-      volumes:
-        - name: jenkins-data
-          persistentVolumeClaim:
-              claimName: jenkins-pv-claim
+              memory: 256Mi
+              cpu: "0.2"
