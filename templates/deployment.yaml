@@ -15,7 +15,7 @@ spec:
     spec:
       containers:
         - name: node-app
-          image: yoavporag/node-app:latest
+          image: yoavporag/node-app:app_change
           ports:
           - containerPort: 3000
             protocol: TCP
