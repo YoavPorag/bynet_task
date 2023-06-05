@@ -7,26 +7,31 @@ pipeline {
                defaultValue: 'latest',
                description: 'label for image. use "latest" or "app-change"')
   }
+
   environment {
     def LABEL = "${params.LABEL}"
   }
-
+  
   stages {
     stage('Deploying container to Kubernetes') {
       steps {
         script {
-          sh 'kubectl apply -f templates/namespace.yaml'
 
-          sh "sed -e 's|REPLACE_TAG|${LABEL}|g' templates/deployment.yaml | kubectl apply -f -"
-          
-          sh '''
-            kubectl apply -f templates/service.yaml
-            until curl 192.168.49.2:31000>/dev/null 2>&1; do sleep 2; done
-          '''
-          
+        withKubeCredentials([credentialsId: 'mykubeconfig'])
+          {
+            sh 'kubectl apply -f node-app_config/namespace.yaml'
+
+            sh "sed -e 's|REPLACE_TAG|${LABEL}|g' node-app_config/deployment.yaml | kubectl apply -f -"
+            
+            sh '''
+              kubectl apply -f node-app_config/service.yaml
+              until curl 192.168.49.2:31000>/dev/null 2>&1; do sleep 2; done
+            '''
+          }
         }
       }
     }
+
     stage('creating port forwarding ') {
       steps {
         script {
